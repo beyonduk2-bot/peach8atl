@@ -1,0 +1,26 @@
+export const officialLinks = {
+  martaWorldCupGuide: "https://itsmarta.com/worldcup26.aspx",
+  martaMatchPlanner:
+    "https://itsmarta.com/ride/planner?to=Atlanta+Stadium%2C+1414+Andrew+Young+International+Boulevard%2C+Atlanta%2C+GA+30313%3A%3A33.75541245820984%2C-84.40084948703623",
+  martaServiceAlerts: "https://www.itsmarta.com/service-updates.aspx",
+  martaRealtimeAlerts: "https://itsmarta.com/ride/alerts",
+  martaRailSchedules: "https://itsmarta.com/ride/routes",
+  martaRailMap: "https://www.itsmarta.com/train-stations-and-schedules.aspx",
+  martaInteractiveMap: "https://itsmarta.com/interactive-system-map.aspx",
+  martaFares: "https://www.itsmarta.com/fare-programs.aspx",
+  martaAirport: "https://itsmarta.com/getting-to-airport.aspx",
+  martaHowToRide: "https://itsmarta.com/howtoride.aspx",
+  martaOnTheGo: "https://itsmarta.com/marta-on-the-go.aspx",
+  martaSeeSay: "https://itsmarta.com/marta-see-say.aspx",
+  martaBreezeApp: "https://itsmarta.com/breeze-mobile.aspx",
+  martaParking: "https://www.itsmarta.com/parking-availability.aspx",
+  martaReach: "https://itsmarta.com/reach.aspx",
+  atlSpoke: "https://beltline.org/atl-spoke/",
+  stationSoccer: "https://www.itsmarta.com/station-soccer.aspx",
+  pickupMatchInfo: "https://opensports.ca/stationsoccer",
+  stadiumBagPolicy: "https://mercedesbenzstadium.com/clear-bag-policy/",
+  stadiumGuide: "https://mercedesbenzstadium.com/a-to-z-guide/",
+  stadiumFood: "https://mercedesbenzstadium.com/food-beverage/",
+  weatherForecast: "https://www.weather.gov/ffc/",
+  fifa: "https://www.fifa.com/"
+} as const;
