@@ -77,7 +77,8 @@ body {
   background: var(--app-bg);
   color: var(--text-primary);
   font-family:
-    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+    var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", system-ui,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
@@ -262,6 +263,22 @@ select {
   animation: mapDotPulseDestination 1.45s ease-in-out infinite;
 }
 
+@keyframes trainPulse {
+  0%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.25;
+  }
+  50% {
+    transform: scale(1.45);
+    opacity: 0.55;
+  }
+}
+
+.train-pulse {
+  animation: trainPulse 1.8s ease-in-out infinite;
+}
+
 .theme-icon-light,
 .theme-icon-dark {
   grid-area: 1 / 1;
@@ -286,7 +303,8 @@ html[data-theme="dark"] .theme-icon-light {
   .map-label-pulse-start,
   .map-label-pulse-destination,
   .map-dot-pulse-start,
-  .map-dot-pulse-destination {
+  .map-dot-pulse-destination,
+  .train-pulse {
     animation: none;
   }
 }

@@ -3,9 +3,6 @@ import {
   SEC_DISTRICT_POINT,
   type MapRoutePoint
 } from "@/data/martaMapOverlayRoutes";
-import { getStationById } from "@/data/stations";
-import { getMartaRoute } from "@/lib/martaRouting";
-import type { Station } from "@/types";
 
 type MartaMapSvgCloneProps = {
   startStationId?: string;
@@ -44,12 +41,6 @@ type ActiveRouteSegment = {
   d: string;
   id: string;
   width?: number;
-};
-
-type GamePlanStop = {
-  detail: string;
-  label: string;
-  tone: "start" | "transfer" | "exit" | "walk";
 };
 
 const COLORS = {
@@ -304,49 +295,6 @@ function getPrimaryRouteColor(startStationId?: string) {
   return COLORS.blue;
 }
 
-function shortStationName(name: string) {
-  return name.replace(/ Station$/, "");
-}
-
-function lineLabel(station: Station) {
-  return `${station.line.join(" / ")} Line`;
-}
-
-function getMapGamePlanStops(routeKey: string): GamePlanStop[] {
-  if (routeKey === DESTINATION_STATION_KEY) {
-    return [
-      { label: "SEC District", detail: "Exit for stadium access", tone: "exit" },
-      { label: "Stadium area", detail: "Short walk in", tone: "walk" }
-    ];
-  }
-
-  try {
-    const station = getStationById(routeKey);
-    const route = getMartaRoute(station);
-    const exitName = shortStationName(route.exitStation);
-    const stops: GamePlanStop[] = [
-      { label: station.name, detail: `Board ${lineLabel(station)}`, tone: "start" }
-    ];
-
-    if (route.transferStation) {
-      stops.push({ label: route.transferStation, detail: "Switch for SEC District", tone: "transfer" });
-    }
-
-    stops.push(
-      { label: exitName, detail: "Exit for stadium access", tone: "exit" },
-      { label: "Stadium area", detail: "Short walk in", tone: "walk" }
-    );
-
-    return stops;
-  } catch {
-    return [
-      { label: "Your station", detail: "Start on MARTA rail", tone: "start" },
-      { label: "SEC District", detail: "Exit for stadium access", tone: "exit" },
-      { label: "Stadium area", detail: "Short walk in", tone: "walk" }
-    ];
-  }
-}
-
 function getLastPointFromPath(d: string) {
   const numbers = d.match(/-?\d+(?:\.\d+)?/g)?.map(Number) ?? [];
 
@@ -551,98 +499,6 @@ function LegendLine({ color, label, y }: { color: string; label: string; y: numb
   );
 }
 
-function gamePlanDotColor(tone: GamePlanStop["tone"]) {
-  if (tone === "start") return COLORS.blue;
-  if (tone === "transfer") return COLORS.text;
-  if (tone === "exit") return COLORS.red;
-  return COLORS.gold;
-}
-
-function gamePlanLabelSize(label: string) {
-  if (label.length > 22) return 12.5;
-  if (label.length > 17) return 13.5;
-  return 15.5;
-}
-
-function MapGamePlan({ stops }: { stops: GamePlanStop[] }) {
-  const rowGap = 38;
-  const firstRowY = 254;
-  const panelHeight = 86 + stops.length * rowGap;
-
-  return (
-    <g filter="url(#clone-text-shadow)">
-      <rect
-        fill="rgba(7, 15, 24, 0.78)"
-        height={panelHeight}
-        rx="18"
-        stroke="#303b49"
-        strokeOpacity={0.85}
-        strokeWidth="2"
-        width="316"
-        x="38"
-        y="168"
-      />
-      <text
-        fill={COLORS.gold}
-        fontFamily="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
-        fontSize="15"
-        fontWeight="820"
-        letterSpacing="1.6"
-        x="58"
-        y="203"
-      >
-        Rail game plan
-      </text>
-      <text
-        fill={COLORS.muted}
-        fontFamily="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
-        fontSize="12"
-        fontWeight="740"
-        letterSpacing="0"
-        x="58"
-        y="226"
-      >
-        Start to SEC District
-      </text>
-
-      {stops.map((stop, index) => {
-        const y = firstRowY + index * rowGap;
-
-        return (
-          <g key={`${stop.label}-${index}`}>
-            {index < stops.length - 1 ? (
-              <line opacity="0.5" stroke="#8f98a2" strokeLinecap="round" strokeWidth="2" x1="65" x2="65" y1={y + 10} y2={y + 28} />
-            ) : null}
-            <circle cx="65" cy={y} fill={gamePlanDotColor(stop.tone)} r="5.8" />
-            <text
-              dominantBaseline="middle"
-              fill={COLORS.text}
-              fontFamily="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
-              fontSize={gamePlanLabelSize(stop.label)}
-              fontWeight="780"
-              x="84"
-              y={y - 5}
-            >
-              {stop.label}
-            </text>
-            <text
-              dominantBaseline="middle"
-              fill={COLORS.muted}
-              fontFamily="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
-              fontSize="10.8"
-              fontWeight="720"
-              x="84"
-              y={y + 14}
-            >
-              {stop.detail}
-            </text>
-          </g>
-        );
-      })}
-    </g>
-  );
-}
-
 function SoccerBallMarker() {
   return (
     <text
@@ -664,13 +520,12 @@ export function MartaMapSvgClone({ startStationId }: MartaMapSvgCloneProps) {
   const activeRouteSegments = getActiveRouteSegments(activeRoute.key, activeRoute.path);
   const routeUsesGreen = activeRouteSegments.some((segment) => segment.color === COLORS.green);
   const activeStationKeys = getActiveStationKeys(activeRoute.key);
-  const gamePlanStops = getMapGamePlanStops(activeRoute.key);
   const activeRoutePathId = `svg-clone-active-route-${activeRoute.key}`;
   const isDestinationOnly = activeRoute.key === DESTINATION_STATION_KEY;
 
   return (
     <svg
-      aria-label="Peach8 ATL rail map SVG draft"
+      aria-label="MARTA rail map with your route to the stadium highlighted"
       className="block h-full w-full"
       preserveAspectRatio="xMidYMid meet"
       role="img"
@@ -706,32 +561,6 @@ export function MartaMapSvgClone({ startStationId }: MartaMapSvgCloneProps) {
       <rect fill="url(#clone-map-bg)" height={MAP_HEIGHT} rx="21" width={MAP_WIDTH} x="0" y="0" />
       <rect filter="url(#clone-bg-texture)" height={MAP_HEIGHT} opacity={0.3} rx="21" width={MAP_WIDTH} x="0" y="0" />
       <rect fill="none" height={MAP_HEIGHT} opacity={0.12} rx="18" stroke="#202a37" strokeWidth="1" width={MAP_WIDTH} x="0" y="0" />
-
-      <text
-        fill={COLORS.text}
-        filter="url(#clone-text-shadow)"
-        fontFamily="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
-        fontSize={51}
-        fontWeight={780}
-        letterSpacing={0}
-        x={38}
-        y={87}
-      >
-        Peach8 ATL
-      </text>
-      <text
-        fill={COLORS.muted}
-        fontFamily="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
-        fontSize={37}
-        fontWeight={760}
-        letterSpacing={0}
-        x={37}
-        y={139}
-      >
-        Rail Map
-      </text>
-
-      <MapGamePlan stops={gamePlanStops} />
 
       <g opacity={0.67} transform="translate(986 89) scale(0.96)">
         <path d="M0 -28 L12 8 L4 8 L4 38 L-4 38 L-4 8 L-12 8 Z" fill="#aeb6c1" />

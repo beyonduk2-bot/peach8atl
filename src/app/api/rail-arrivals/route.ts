@@ -37,12 +37,16 @@ function normalizeStationName(value: string) {
     .replace(/[^a-z0-9]/g, "");
 }
 
-function coordinatesForStation(stationName: string) {
+function findStationRecord(stationName: string) {
   const normalized = normalizeStationName(stationName);
-  const station = stations.find((candidate) => {
+  return stations.find((candidate) => {
     const candidateName = normalizeStationName(candidate.name);
     return normalized.includes(candidateName) || candidateName.includes(normalized);
   });
+}
+
+function coordinatesForStation(stationName: string) {
+  const station = findStationRecord(stationName);
 
   return {
     latitude: station?.latitude ?? 33.7537,
@@ -50,39 +54,86 @@ function coordinatesForStation(stationName: string) {
   };
 }
 
+// Sample data mirrors what the live feed would say at this station, so the UI
+// reads the same either way: correct line, a stadium-bound direction, and a
+// plausible opposite-direction train.
 function mockArrivals(station: string): RailArrival[] {
-  const now = Date.now();
-  const { latitude, longitude } = coordinatesForStation(station);
+  // The stadium station isn't in the planning data (it's the destination, not
+  // a start), so sample its Blue/Green stadium-segment trains explicitly. It
+  // can be requested as "SEC District" or by its feed name "Omni Dome".
+  const normalized = normalizeStationName(station);
+  if (normalized.includes("secdistrict") || normalized.includes("omnidome")) {
+    return mockSecDistrictArrivals(station);
+  }
+
+  const record = findStationRecord(station);
+  const latitude = record?.latitude ?? 33.7537;
+  const longitude = record?.longitude ?? -84.3863;
+  const line = (record?.line[0] ?? "Red").toUpperCase();
+  const group = record?.directionGroup ?? "central";
+
+  const toStadium =
+    group === "south"
+      ? { direction: "N", destination: line === "GOLD" ? "Doraville" : "North Springs" }
+      : group === "east"
+        ? { direction: "W", destination: "H. E. Holmes" }
+        : group === "west"
+          ? { direction: "E", destination: "Indian Creek" }
+          : { direction: "S", destination: "Airport" };
+  const opposite =
+    group === "south"
+      ? { direction: "S", destination: "Airport" }
+      : group === "east"
+        ? { direction: "E", destination: "Indian Creek" }
+        : group === "west"
+          ? { direction: "W", destination: "H. E. Holmes" }
+          : { direction: "N", destination: line === "GOLD" ? "Doraville" : "North Springs" };
+
+  const sample = (minutes: number, direction: string, destination: string): RailArrival => ({
+    destination,
+    direction,
+    eventTime: new Date(Date.now() + minutes * 60_000).toISOString(),
+    isRealtime: false,
+    line,
+    nextArrival: `${minutes} min`,
+    station,
+    waitingSeconds: minutes * 60,
+    waitingTime: `${minutes} min`,
+    delay: "T0S",
+    latitude,
+    longitude
+  });
 
   return [
-    {
-      destination: "Downtown",
-      direction: "Toward stadium area",
-      eventTime: new Date(now + 7 * 60_000).toISOString(),
-      isRealtime: false,
-      line: "Red / Gold",
-      nextArrival: "7 min",
-      station,
-      waitingSeconds: 420,
-      waitingTime: "7 min",
-      delay: "No delay data in mock mode",
-      latitude,
-      longitude
-    },
-    {
-      destination: "Downtown",
-      direction: "Toward stadium area",
-      eventTime: new Date(now + 14 * 60_000).toISOString(),
-      isRealtime: false,
-      line: "Blue / Green",
-      nextArrival: "14 min",
-      station,
-      waitingSeconds: 840,
-      waitingTime: "14 min",
-      delay: "No delay data in mock mode",
-      latitude,
-      longitude
-    }
+    sample(4, toStadium.direction, toStadium.destination),
+    sample(12, toStadium.direction, toStadium.destination),
+    sample(7, opposite.direction, opposite.destination)
+  ];
+}
+
+function mockSecDistrictArrivals(station: string): RailArrival[] {
+  const latitude = 33.7589;
+  const longitude = -84.3987;
+
+  const sample = (minutes: number, line: string, direction: string, destination: string): RailArrival => ({
+    destination,
+    direction,
+    eventTime: new Date(Date.now() + minutes * 60_000).toISOString(),
+    isRealtime: false,
+    line,
+    nextArrival: `${minutes} min`,
+    station,
+    waitingSeconds: minutes * 60,
+    waitingTime: `${minutes} min`,
+    delay: "T0S",
+    latitude,
+    longitude
+  });
+
+  return [
+    sample(3, "BLUE", "E", "Indian Creek"),
+    sample(8, "GREEN", "E", "Edgewood/Candler Park"),
+    sample(5, "BLUE", "W", "H. E. Holmes")
   ];
 }
 
@@ -128,14 +179,15 @@ function normalizeArrival(arrival: MartaRailRealtimeArrival): RailArrival {
   };
 }
 
+// Only ever return trains for the requested station. An empty list is more
+// honest than borrowing arrivals from elsewhere and labeling them "Live".
 function filterArrivalsForStation(arrivals: RailArrival[], station: string) {
   const requestedStation = normalizeStationName(station);
-  const filtered = arrivals.filter((arrival) => {
+
+  return arrivals.filter((arrival) => {
     const arrivalStation = normalizeStationName(arrival.station);
     return arrivalStation.includes(requestedStation) || requestedStation.includes(arrivalStation);
   });
-
-  return filtered.length > 0 ? filtered : arrivals.slice(0, 6);
 }
 
 async function fetchLiveArrivals(apiKey: string) {

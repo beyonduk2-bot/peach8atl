@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Info, Lightbulb, LinkIcon, TrainFront } from "lucide-react";
+import { CalendarDays, Lightbulb, LinkIcon, TrainFront } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 const items = [
   { href: "/", label: "Go", icon: TrainFront },
+  { href: "/matches", label: "Matches", icon: CalendarDays },
   { href: "/tips", label: "Tips", icon: Lightbulb },
-  { href: "/sources", label: "Links", icon: LinkIcon },
-  { href: "/about", label: "About", icon: Info }
+  { href: "/sources", label: "Links", icon: LinkIcon }
 ];
 
 export function BottomNav() {
@@ -29,7 +29,7 @@ export function BottomNav() {
           return (
             <Link
               aria-current={isActive ? "page" : undefined}
-              className={`focus-ring flex min-h-12 items-center justify-center gap-2 rounded-full text-sm font-black transition ${
+              className={`focus-ring flex min-h-12 items-center justify-center gap-1.5 rounded-full text-sm font-bold transition ${
                 isActive ? "bg-[#ffb347] text-[#0d1117]" : "text-[#8b949e] active:bg-white/10"
               }`}
               href={href}

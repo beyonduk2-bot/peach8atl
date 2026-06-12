@@ -1,7 +1,5 @@
 import type { Station } from "@/types";
 
-export type MartaRouteMode = "preMatch" | "postMatch";
-
 export type MartaRoute = {
   modeLabel: string;
   startLabel: string;
@@ -170,28 +168,6 @@ function routeToStadium(station: Station): MartaRoute {
   };
 }
 
-function routeFromStadium(station: Station): MartaRoute {
-  const toStadium = routeToStadium(station);
-
-  return {
-    ...toStadium,
-    modeLabel: "After Match",
-    startLabel: "SEC District or Vine City",
-    direction: `return toward ${station.name} Station`,
-    stops: uniqueStops(["SEC District Station", "Vine City Station", "Five Points", ...toStadium.stops.slice(0, -2).reverse()]),
-    instructions: [
-      "Start from SEC District or Vine City",
-      ...(toStadium.transferStation ? ["Transfer at Five Points"] : []),
-      `Ride back toward ${station.name} Station`,
-      `Exit at ${station.name} Station`
-    ]
-  };
-}
-
-export function getMartaRoute(station: Station, mode: MartaRouteMode = "preMatch") {
-  return mode === "postMatch" ? routeFromStadium(station) : routeToStadium(station);
-}
-
-export function estimateRailMinutesToStadium(station: Station) {
-  return estimateRailMinutesForStation(station);
+export function getMartaRoute(station: Station) {
+  return routeToStadium(station);
 }

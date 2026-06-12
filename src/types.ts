@@ -1,6 +1,3 @@
-export type StartingType = "near-rail" | "driving-in";
-export type DestinationType = "stadium" | "fan-festival";
-
 export type MatchTeam = {
   name: string;
   flagEmoji: string;
@@ -49,36 +46,6 @@ export type Match = {
   planningNote: string;
   stadiumAreaLabel: string;
   recommendedArrivalBufferMinutes: number;
-};
-
-export type RouteStep = {
-  kind: "start" | "drive" | "station" | "rail" | "transfer" | "arrive";
-  title: string;
-  body: string;
-  label?: string;
-};
-
-export type GeneratedPlan = {
-  match: Match;
-  startingType: StartingType;
-  destination: DestinationType;
-  destinationLabel: string;
-  areaInput: string;
-  recommendedStation: Station;
-  backupStation?: Station;
-  routeSteps: RouteStep[];
-  leaveByTime: string;
-  targetStationArrivalTime: string;
-  railLine: string;
-  railDirection: string;
-  transferNote?: string;
-  exitStationSuggestion: string;
-  parkingNote?: string;
-  originNote?: string;
-  googleDriveUrl: string;
-  googleTransitUrl: string;
-  calendarEventUrl: string;
-  shareText: string;
 };
 
 export type RailArrival = {

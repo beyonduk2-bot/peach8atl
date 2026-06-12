@@ -8,15 +8,11 @@ type GetToStationActionsProps = {
 
 export function GetToStationActions({ origin, station }: GetToStationActionsProps) {
   return (
-    <section className="rounded-[1.45rem] border border-white/10 bg-[#161b27] p-4 shadow-sm">
-      <div className="mb-3 flex items-end justify-between gap-3">
-        <div>
-          <p className="text-[0.78rem] font-bold tracking-[0.03em] text-[#ffb347]">First leg</p>
-          <p className="mt-1 text-sm font-semibold leading-5 text-[#8b949e]">
-            Getting to {station.name} Station first? Maps, walking, or a rideshare — your call.
-          </p>
-        </div>
-      </div>
+    <section className="rounded-[1.75rem] border border-white/10 bg-[#161b27] p-5 shadow-sm">
+      <h2 className="text-lg font-bold leading-tight text-[#f0f6fc]">How do I get there?</h2>
+      <p className="mb-3 mt-1 text-sm font-medium leading-5 text-[#8b949e]">
+        Walk it, or hand the trip to {station.name} over to your favorite app.
+      </p>
       <StationAppButtons station={station} origin={origin} />
     </section>
   );

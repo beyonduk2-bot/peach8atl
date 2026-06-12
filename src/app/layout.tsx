@@ -1,10 +1,17 @@
 import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 import Link from "next/link";
 import Script from "next/script";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNav } from "@/components/BottomNav";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "@/app/globals.css";
+
+const inter = Inter({
+  display: "swap",
+  subsets: ["latin"],
+  variable: "--font-inter"
+});
 
 export const metadata: Metadata = {
   title: "Peach8 ATL · Your MARTA rail matchday cheat sheet",
@@ -63,13 +70,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html data-scroll-behavior="smooth" lang="en" suppressHydrationWarning>
+    <html className={inter.variable} data-scroll-behavior="smooth" lang="en" suppressHydrationWarning>
       <head>
         <Script id="peach8-theme-boot" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body>
-        <div className="hidden border-b border-white/10 bg-[#211c16] px-4 py-3 text-center text-sm font-bold text-[#ffb347] md:block">
-          Peach8 was made for your phone — but don&apos;t worry, this big screen gets the full treatment too.
+        <div className="hidden border-b border-white/10 bg-[#211c16] px-4 py-3 text-center text-sm font-semibold text-[#ffb347] md:block">
+          Peach8 was built for your phone — but it works just fine on the big screen too.
         </div>
         <ThemeProvider>
           <div className="mx-auto min-h-screen w-full max-w-[430px] bg-[#0d1117] shadow-[0_0_80px_rgba(0,0,0,0.45)]">

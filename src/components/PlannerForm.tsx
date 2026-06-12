@@ -1,18 +1,15 @@
 "use client";
 
+import Link from "next/link";
+import { CalendarDays } from "lucide-react";
 import { useState } from "react";
-import { getDefaultMatch, matches } from "@/data/matches";
-import { areStationsClose, findNearestStations, getStationById } from "@/data/stations";
-import { MatchChipSelector } from "@/components/MatchChipSelector";
-import { MatchCountdownCard } from "@/components/MatchCountdownCard";
-import { BeforeYouGoAccordion } from "@/components/BeforeYouGoAccordion";
-import { MartaRailMapCard } from "@/components/MartaRailMapCard";
-import { NextTrainHero } from "@/components/NextTrainHero";
-import { OfficialCheckCard } from "@/components/OfficialCheckCard";
-import { StationFinderCard } from "@/components/StationFinderCard";
 import { GetToStationActions } from "@/components/GetToStationActions";
+import { MartaRailMapCard } from "@/components/MartaRailMapCard";
+import { StationFinderCard } from "@/components/StationFinderCard";
+import { StationLiveSection } from "@/components/StationLiveSection";
+import { StationResultCard } from "@/components/StationResultCard";
+import { areStationsClose, findNearestStations, getStationById } from "@/data/stations";
 import { getWalkEstimate } from "@/lib/distance";
-import { useNow } from "@/lib/useNow";
 import type { Coordinates, GeocodeResponse, Station } from "@/types";
 
 type NearbyStation = {
@@ -29,43 +26,7 @@ type StationState = {
   selectedStation?: Station;
 };
 
-function formatMatchDate(date: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "2-digit",
-    day: "2-digit",
-    year: "numeric",
-    timeZone: "America/New_York"
-  }).format(new Date(`${date}T12:00:00-04:00`));
-}
-
-function formatKickoffTime(date: string, time: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: "America/New_York"
-  })
-    .format(new Date(`${date}T${time}:00-04:00`))
-    .toLowerCase();
-}
-
-function formatCountdown(date: string, time: string, now: Date) {
-  const kickoff = new Date(`${date}T${time}:00-04:00`).getTime();
-  const diff = Math.max(0, kickoff - now.getTime());
-  const totalSeconds = Math.floor(diff / 1000);
-  const days = Math.floor(totalSeconds / 86_400);
-  const hours = Math.floor((totalSeconds % 86_400) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  if (diff === 0) {
-    return "match time";
-  }
-
-  if (days > 0) return `${days}d ${hours}h ${minutes}m ${seconds}s`;
-  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
-  if (minutes > 0) return `${minutes}m ${seconds}s`;
-  return `${seconds}s`;
-}
+const IDLE_STATE: StationState = { status: "idle", options: [] };
 
 function stationFromText(value: string) {
   const input = value.trim().toLowerCase();
@@ -152,15 +113,8 @@ function selectedOption(options: NearbyStation[], station?: Station) {
 }
 
 export function PlannerForm() {
-  const defaultMatch = getDefaultMatch();
-  const now = useNow(1000);
-  const [selectedMatchId, setSelectedMatchId] = useState(defaultMatch.id);
   const [areaInput, setAreaInput] = useState("");
-  const [stationState, setStationState] = useState<StationState>({
-    status: "idle",
-    options: []
-  });
-  const selectedMatch = matches.find((match) => match.id === selectedMatchId) ?? defaultMatch;
+  const [stationState, setStationState] = useState<StationState>(IDLE_STATE);
   const currentOption = selectedOption(stationState.options, stationState.selectedStation);
   const selectedStation = currentOption?.station;
   const origin = stationState.coordinates ? originFromCoordinates(stationState.coordinates) : areaInput.trim() || undefined;
@@ -190,8 +144,8 @@ export function PlannerForm() {
         selectedStation: options[0].station,
         message:
           geocode.sourceName === "Peach8 place hint"
-            ? "Nice — that's a spot we know well. Give the route a final glance in your map app."
-            : "Got it. Give the route one last glance in your map app before you roll."
+            ? "That's a spot we know well — still worth a quick glance in your map app."
+            : "Found it. Give the route one last look in your map app before you head out."
       });
       return;
     }
@@ -204,22 +158,17 @@ export function PlannerForm() {
       selectedStation: station,
       message:
         station.id === "airport"
-          ? "Starting at ATL? Lucky you — Airport Station is right inside the terminal."
-          : "Our best read from what you typed — give it a quick sanity check in your map app."
+          ? "Starting at the airport? Easy — the station is right inside the terminal."
+          : "Our best guess from what you typed — double-check it in your map app."
     });
   }
 
   function requestNearestStation() {
-    if (areaInput.trim()) {
-      void setManualStation();
-      return;
-    }
-
     if (!navigator.geolocation) {
       setStationState({
         status: "error",
         options: [],
-        message: "No worries — just type a hotel, address, neighborhood, or station instead."
+        message: "Location isn't available here — type a hotel, address, or neighborhood instead."
       });
       return;
     }
@@ -227,7 +176,7 @@ export function PlannerForm() {
     setStationState({
       status: "loading",
       options: [],
-      message: "Finding a nearby MARTA station…"
+      message: "Looking for stations near you…"
     });
 
     navigator.geolocation.getCurrentPosition(
@@ -243,14 +192,14 @@ export function PlannerForm() {
           coordinates,
           options: closeOptions,
           selectedStation: closeOptions[0].station,
-          message: "Location used for this session only. No breadcrumbs saved."
+          message: "Location used for this session only — nothing saved."
         });
       },
       () => {
         setStationState({
           status: "denied",
           options: [],
-          message: "No worries — just type a hotel, address, neighborhood, or station instead."
+          message: "No worries — type a hotel, address, or neighborhood instead."
         });
       },
       {
@@ -265,49 +214,51 @@ export function PlannerForm() {
     <div className="space-y-3 pb-2">
       {!selectedStation ? (
         <>
-          <MatchChipSelector matches={matches} selectedMatchId={selectedMatch.id} onSelect={setSelectedMatchId} />
-
-          <MatchCountdownCard
-            countdownLabel={formatCountdown(defaultMatch.date, defaultMatch.kickoffTime, now)}
-            dateLabel={formatMatchDate(defaultMatch.date)}
-            kickoffLabel={formatKickoffTime(defaultMatch.date, defaultMatch.kickoffTime)}
-            match={defaultMatch}
-          />
-
           <StationFinderCard
             inputValue={areaInput}
             message={stationState.message}
             status={stationState.status}
-            onFindStation={requestNearestStation}
             onInputChange={(value) => {
               setAreaInput(value);
             }}
+            onSubmitText={() => {
+              void setManualStation();
+            }}
+            onUseLocation={requestNearestStation}
           />
+
+          <Link
+            className="focus-ring flex items-center justify-between gap-3 rounded-[1.75rem] border border-white/10 bg-[#161b27] p-4 text-sm font-semibold text-[#8b949e] shadow-sm transition active:scale-[0.99]"
+            href="/matches"
+          >
+            <span className="inline-flex items-center gap-2">
+              <CalendarDays aria-hidden="true" className="text-[#ffb347]" size={16} />
+              Wondering when the matches are?
+            </span>
+            <span className="text-[#ffb347]">Matchdays →</span>
+          </Link>
         </>
-      ) : null}
-
-      {selectedStation ? (
-        <NextTrainHero
-          approxWalkMinutes={currentOption?.approxWalkMinutes}
-          options={stationState.options}
-          station={selectedStation}
-          onSelect={(station) => {
-            setStationState((current) => ({
-              ...current,
-              selectedStation: station
-            }));
-          }}
-        />
-      ) : null}
-
-      {selectedStation ? (
+      ) : (
         <>
+          <StationResultCard
+            approxWalkMinutes={currentOption?.approxWalkMinutes}
+            distanceMiles={currentOption?.distanceMiles}
+            note={stationState.message}
+            options={stationState.options}
+            station={selectedStation}
+            onReset={() => setStationState(IDLE_STATE)}
+            onSelect={(station) => {
+              setStationState((current) => ({
+                ...current,
+                selectedStation: station
+              }));
+            }}
+          />
+          <GetToStationActions origin={origin} station={selectedStation} />
+          <StationLiveSection station={selectedStation} />
           <MartaRailMapCard startStationId={selectedStation.id} />
-          {selectedStation ? <GetToStationActions origin={origin} station={selectedStation} /> : null}
-          <OfficialCheckCard />
-          <BeforeYouGoAccordion />
         </>
-      ) : null}
+      )}
     </div>
   );
 }
