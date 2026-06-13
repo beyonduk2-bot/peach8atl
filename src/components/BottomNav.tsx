@@ -17,7 +17,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+0.65rem)] z-50 mx-auto w-[min(398px,calc(100vw-2rem))] rounded-full bg-[#0d1117] p-2 shadow-[0_18px_55px_rgba(0,0,0,0.45)]"
+      className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+0.65rem)] z-50 mx-auto w-[min(398px,calc(100vw-2rem))] rounded-full border border-[var(--border-soft)] bg-[var(--surface)] p-2 shadow-[var(--shadow-card)]"
     >
       <div className="grid grid-cols-4 gap-1">
         {items.map(({ href, icon: Icon, label }) => {
@@ -30,7 +30,7 @@ export function BottomNav() {
             <Link
               aria-current={isActive ? "page" : undefined}
               className={`focus-ring flex min-h-12 items-center justify-center gap-1.5 rounded-full text-sm font-bold transition ${
-                isActive ? "bg-[#ffb347] text-[#0d1117]" : "text-[#8b949e] active:bg-white/10"
+                isActive ? "bg-[#172033] text-white" : "text-[var(--text-muted)] active:bg-[var(--surface-warm)]"
               }`}
               href={href}
               key={href}

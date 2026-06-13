@@ -33,13 +33,7 @@ const disclaimer =
 
 const themeBootScript = `
 (() => {
-  try {
-    const stored = window.localStorage.getItem("peach8-theme");
-    const theme = stored === "dark" || stored === "light" ? stored : "light";
-    document.documentElement.dataset.theme = theme;
-  } catch {
-    document.documentElement.dataset.theme = "light";
-  }
+  document.documentElement.dataset.theme = "light";
 })();
 `;
 
@@ -79,7 +73,7 @@ export default function RootLayout({
           Peach8 was built for your phone — but it works just fine on the big screen too.
         </div>
         <ThemeProvider>
-          <div className="mx-auto min-h-screen w-full max-w-[430px] bg-[#0d1117] shadow-[0_0_80px_rgba(0,0,0,0.45)]">
+          <div className="mx-auto min-h-screen w-full max-w-[430px] bg-[var(--shell-bg)] shadow-[var(--shadow-shell)]">
             <AppHeader />
             {children}
             <Footer />

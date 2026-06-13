@@ -45,10 +45,10 @@ export function HeaderWeather() {
           ? `Atlanta weather ${forecast.temperature} degrees`
           : "Atlanta weather unavailable"
       }
-      className="flex h-11 shrink-0 flex-col items-center justify-center px-1 text-center text-[#f0f6fc]"
+      className="flex h-11 shrink-0 flex-col items-center justify-center px-1 text-center text-[var(--text-primary)]"
       role="status"
     >
-      <p className="text-[0.58rem] font-black uppercase leading-none text-[#8b949e]">ATL</p>
+      <p className="text-[0.58rem] font-black uppercase leading-none text-[var(--text-muted)]">ATL</p>
       <p className="mt-1 text-[0.95rem] font-black leading-none tabular-nums">
         {forecast ? `${forecast.temperature}°` : "--°"}
       </p>

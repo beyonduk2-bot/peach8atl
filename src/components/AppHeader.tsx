@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { MoreHorizontal } from "lucide-react";
 import { HeaderWeather } from "@/components/HeaderWeather";
-import { ThemeToggle } from "@/components/ThemeToggle";
 
 function Peach8Logo() {
   return (
     <span className="block min-w-0" aria-hidden="true">
-      <span className="block text-[1.34rem] font-bold leading-none text-[#f0f6fc]">Peach8 ATL</span>
-      <span className="mt-1 block text-[0.68rem] font-bold leading-none text-[#8b949e]">
+      <span className="block text-[1.34rem] font-bold leading-none text-[var(--text-primary)]">Peach8 ATL</span>
+      <span className="mt-1 block text-[0.68rem] font-bold leading-none text-[var(--text-muted)]">
         No car drama. Just rail.
       </span>
     </span>
@@ -22,10 +21,9 @@ export function AppHeader() {
       </Link>
       <div className="flex shrink-0 items-center gap-2">
         <HeaderWeather />
-        <ThemeToggle />
         <Link
           aria-label="About Peach8 ATL"
-          className="focus-ring grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 bg-[#161b27] text-[#f0f6fc] shadow-sm active:bg-[#211c16]"
+          className="focus-ring grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[var(--border-soft)] bg-[var(--surface)] text-[var(--text-primary)] shadow-sm active:bg-[var(--surface-warm)]"
           href="/about"
         >
           <MoreHorizontal aria-hidden="true" size={21} />
